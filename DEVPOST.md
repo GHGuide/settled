@@ -9,9 +9,11 @@
 ## Try it — judges start here
 Settled is **deployed always-on**, so it responds in real time during judging.
 
-**1. Join the live workspace** (permanent link, no extra signup beyond Slack):
+**1. Join the live workspace** — Slack developer sandbox **`settledco.slack.com`**, join via this
+permanent link (no extra signup beyond Slack):
 👉 **https://join.slack.com/t/settledco/shared_invite/zt-40u5d8u35-2u3iORV3gWEkIuYrnck70A**
 You'll land in **#platform**, which already holds a worked example (datastore + SSO decisions).
+*(Judges slackhack@salesforce.com and testing@devpost.com are also invited directly.)*
 
 **2. See the dashboard** — left sidebar → **Apps → Settled → Home** tab: live counts
 (proposed / contested / settled / superseded) + the full ledger.
