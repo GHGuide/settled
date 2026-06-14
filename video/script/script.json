@@ -3,7 +3,7 @@
   "scenes": [
     {
       "id": "s01_hook",
-      "vo": "Teams are putting AI agents to work in Slack. But an agent acts on whatever it reads — even a decision the team already reversed. Settled keeps everyone, and every agent, on the same page about what's actually been decided."
+      "vo": "An AI agent is about to build on Postgres — a decision this team reversed months ago. But first, it checks Settled. Superseded, Settled says — it's Aurora now, here's the proof. The agent fixes itself, before it ships the mistake. That's Settled: the decision layer your people, and your agents, check before they act."
     },
     {
       "id": "s02_problem",

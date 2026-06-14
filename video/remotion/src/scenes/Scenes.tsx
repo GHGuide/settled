@@ -48,16 +48,50 @@ const Caption: React.FC<{ children: React.ReactNode; o?: number }> = ({ children
   <div style={{ opacity: o, fontFamily: T.sans, fontSize: 28, color: T.dim, lineHeight: 1.5 }}>{children}</div>
 );
 
-// ---------------------------------------------------------------- s01 hook
+// ---------------------------------------------------------------- s01 hook — guardrail cold-open
+// Leads with the differentiator: an agent about to act on a reversed decision, stopped by Settled.
 export const Hook: React.FC = () => {
-  const a = useRise(8), b = useRise(28), c = useRise(2);
+  const { fps } = useVideoConfig();
+  const f = useCurrentFrame();
+  // reveal delays synced to the 20.6s VO beats
+  const eyebrow = useRise(2), card = useRise(8);
+  const lineA = useRise(100);   // "...build on Postgres"
+  const lineB = useRise(215);   // "it checks Settled"
+  const interceptO = useRise(270).o;  // "Superseded..."
+  const interceptPop = spring({ frame: f - 270, fps, config: { damping: 12, mass: 0.8 } });
+  const redFlash = interpolate(f, [270, 285, 320], [0, 0.16, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const lineC = useRise(385);   // "the agent fixes itself"
+  const tag = useRise(470);     // "That's Settled..."
+  const row: React.CSSProperties = { fontFamily: T.mono, fontSize: 27, lineHeight: 1.5, color: "#E8E8E8" };
   return (
     <Cream>
-      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", textAlign: "center", padding: 120 }}>
-        <div style={{ opacity: c.o, marginBottom: 30 }}><Eyebrow>The decision layer for Slack</Eyebrow></div>
-        <Headline size={170} style={{ opacity: a.o, transform: `translateY(${a.y}px)` }}>Settled</Headline>
-        <div style={{ marginTop: 36, maxWidth: 1180, opacity: b.o, transform: `translateY(${b.y}px)` }}>
-          <Caption>Keeps your people — and your AI agents —<br />on the same page about what's been decided.</Caption>
+      <AbsoluteFill style={{ justifyContent: "center", alignItems: "center", padding: 90 }}>
+        <div style={{ opacity: eyebrow.o, marginBottom: 22 }}><Eyebrow>An agent, about to act</Eyebrow></div>
+        <div style={{ position: "relative", opacity: card.o, transform: `translateY(${card.y}px)`,
+          width: 1200, background: "#1A1D21", borderRadius: 20, border: "1px solid #33373B",
+          boxShadow: "0 50px 110px rgba(26,25,22,0.30)", padding: "42px 48px", overflow: "hidden" }}>
+          <AbsoluteFill style={{ background: `rgba(224,30,90,${redFlash})`, pointerEvents: "none" }} />
+          {/* agent intends to act on the old decision */}
+          <div style={{ ...row, opacity: lineA.o }}>
+            <span style={{ color: "#7AA6E0" }}>agent</span> <span style={{ color: "#9AA0A6" }}>deploy →</span> provision datastore: <b style={{ color: "#E0A85E" }}>Postgres</b>
+          </div>
+          {/* checks Settled first */}
+          <div style={{ ...row, opacity: lineB.o, marginTop: 16, color: "#9AA0A6" }}>
+            ↳ asks Settled&nbsp;&nbsp;<span style={{ color: "#E8E8E8" }}>is_binding(</span><span style={{ color: "#5EC2A8" }}>"datastore"</span><span style={{ color: "#E8E8E8" }}>)</span>
+          </div>
+          {/* intercept — superseded */}
+          <div style={{ opacity: interceptO, transform: `scale(${0.96 + interceptPop * 0.04})`, transformOrigin: "left center",
+            marginTop: 22, padding: "18px 22px", borderRadius: 14, background: "#241A1D", border: "1px solid rgba(224,30,90,0.5)" }}>
+            <div style={{ ...row, color: "#FF6B8A", fontWeight: 700 }}>⛔ SUPERSEDED — Postgres no longer binds</div>
+            <div style={{ ...row, marginTop: 8 }}>→ datastore is <b style={{ color: "#2EB67D" }}>Aurora</b> now&nbsp;&nbsp;<span style={{ color: "#9AA0A6", fontSize: 21 }}>settledco.slack.com/…/p1781 · permalink</span></div>
+          </div>
+          {/* agent corrects itself */}
+          <div style={{ ...row, opacity: lineC.o, marginTop: 22, color: "#2EB67D" }}>
+            <span style={{ color: "#7AA6E0" }}>agent</span> corrects → provision datastore: <b>Aurora</b> ✓
+          </div>
+        </div>
+        <div style={{ marginTop: 42, textAlign: "center", opacity: tag.o, transform: `translateY(${tag.y}px)`, maxWidth: 1200 }}>
+          <Headline size={50}>Settled — the decision layer agents check <A>before they act.</A></Headline>
         </div>
       </AbsoluteFill>
     </Cream>

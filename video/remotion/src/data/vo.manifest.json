@@ -5,7 +5,7 @@
     {
       "id": "s01_hook",
       "mp3": "s01_hook.mp3",
-      "duration": 13.978
+      "duration": 20.619
     },
     {
       "id": "s02_problem",
@@ -68,5 +68,5 @@
       "duration": 8.173
     }
   ],
-  "total_duration": 122.09
+  "total_duration": 128.73
 }
