@@ -1,0 +1,72 @@
+{
+  "engine": "elevenlabs",
+  "voice": "EXAVITQu4vr4xnSDxMaL",
+  "scenes": [
+    {
+      "id": "s01_hook",
+      "mp3": "s01_hook.mp3",
+      "duration": 13.978
+    },
+    {
+      "id": "s02_problem",
+      "mp3": "s02_problem.mp3",
+      "duration": 8.545
+    },
+    {
+      "id": "s03_split",
+      "mp3": "s03_split.mp3",
+      "duration": 17.508
+    },
+    {
+      "id": "s04_capture",
+      "mp3": "s04_capture.mp3",
+      "duration": 9.799
+    },
+    {
+      "id": "s05_ratify",
+      "mp3": "s05_ratify.mp3",
+      "duration": 5.619
+    },
+    {
+      "id": "s06_contested",
+      "mp3": "s06_contested.mp3",
+      "duration": 7.012
+    },
+    {
+      "id": "s07_lifecycle",
+      "mp3": "s07_lifecycle.mp3",
+      "duration": 8.266
+    },
+    {
+      "id": "s08_assistant",
+      "mp3": "s08_assistant.mp3",
+      "duration": 6.502
+    },
+    {
+      "id": "s09_query",
+      "mp3": "s09_query.mp3",
+      "duration": 6.827
+    },
+    {
+      "id": "s10_apphome",
+      "mp3": "s10_apphome.mp3",
+      "duration": 6.316
+    },
+    {
+      "id": "s11_difference",
+      "mp3": "s11_difference.mp3",
+      "duration": 10.867
+    },
+    {
+      "id": "s12_mcp",
+      "mp3": "s12_mcp.mp3",
+      "duration": 12.678
+    },
+    {
+      "id": "s13_close",
+      "mp3": "s13_close.mp3",
+      "duration": 8.173
+    }
+  ],
+  "total_duration": 122.09
+}

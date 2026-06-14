@@ -1,0 +1,16 @@
+.venv/
+video/
+tools/
+demo/
+node_modules/
+*.mov
+*.mp4
+*.wav
+*.gif
+downloads/
+__pycache__/
+*.pyc
+.git/
+.env
+.env.*
+*.md

@@ -1,0 +1,41 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# DB
+*.sqlite3
+*.db
+ledger.db
+
+# Node (if JS path chosen)
+node_modules/
+
+# OS
+.DS_Store
+
+# Internal / strategy docs — not for the public repo
+PROGRESS.md
+BRIEF.md
+CLAUDE.md
+docs/progress.md
+
+# Heavy / generated
+tools/
+video/remotion/node_modules/
+video/out/
+video/capture/raw/
+video/remotion/public/footage/
+video/remotion/public/vo/
+video/remotion/public/audio/
+video/**/*.mov
+video/**/*.mp4
+video/**/*.mp3
+video/**/*.wav

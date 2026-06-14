@@ -1,0 +1,57 @@
+{
+  "project": "settled",
+  "scenes": [
+    {
+      "id": "s01_hook",
+      "vo": "Teams are putting AI agents to work in Slack. But an agent acts on whatever it reads — even a decision the team already reversed. Settled keeps everyone, and every agent, on the same page about what's actually been decided."
+    },
+    {
+      "id": "s02_problem",
+      "vo": "It starts simple. A team picks Postgres, then Mongo, then settles on Aurora. The thread scrolls away — and now the latest decision is buried."
+    },
+    {
+      "id": "s03_split",
+      "vo": "Same conversation, two teams. Without Settled, an engineer rebuilds on Postgres weeks later: a decision that was already reversed, and nobody can find. Three days, lost. With Settled, the agent checks what's binding first, and ships it right the first time."
+    },
+    {
+      "id": "s04_capture",
+      "vo": "Here's the real product. Settled watches every channel. When a decision lands, it catches it — with a confidence score — and asks a human to confirm."
+    },
+    {
+      "id": "s05_ratify",
+      "vo": "One check mark settles it. The human stays in the loop — that's the feature, not a workaround."
+    },
+    {
+      "id": "s06_contested",
+      "vo": "And when it's still contested — Okta versus Auth0 — Settled says so. Nothing is binding until a human ratifies it."
+    },
+    {
+      "id": "s07_lifecycle",
+      "vo": "Every decision carries a status. Proposed, contested, settled, superseded. Each anchored to the exact words and a permalink."
+    },
+    {
+      "id": "s08_assistant",
+      "vo": "Anyone can just ask. Settled answers from the ledger — only what was actually decided, with the source attached."
+    },
+    {
+      "id": "s09_query",
+      "vo": "Or run slash settled on any topic. The current binding decision, and its full history, right inside Slack."
+    },
+    {
+      "id": "s10_apphome",
+      "vo": "The home tab is the whole ledger at a glance. Settled, contested, and what's still waiting on a human."
+    },
+    {
+      "id": "s11_difference",
+      "vo": "So here's what makes Settled different. Every other tool logs a decision for a person to read later. Settled is the one an agent can ask — before it acts — is this still binding?"
+    },
+    {
+      "id": "s12_mcp",
+      "vo": "Through its own MCP server, any agent — Claude, an I D E bot, your C I — checks Settled first. The one about to build on an old decision is stopped, and handed the one that still holds."
+    },
+    {
+      "id": "s13_close",
+      "vo": "Other tools remember what was said. Settled makes sure what was decided still holds — for the people, and the agents, working in Slack."
+    }
+  ]
+}

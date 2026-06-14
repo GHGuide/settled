@@ -1,0 +1,23 @@
+{
+  "name": "settled-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Settled demo video — Remotion project (template for all projects)",
+  "scripts": {
+    "dev": "remotion studio",
+    "render": "remotion render Settled out/settled-demo.mp4 --codec=h264",
+    "render-yt": "remotion render Settled out/settled-demo-yt.mp4 --codec=h264 --crf=20"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.290",
+    "@remotion/google-fonts": "4.0.290",
+    "@remotion/motion-blur": "^4.0.290",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.290"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "typescript": "5.7.2"
+  }
+}

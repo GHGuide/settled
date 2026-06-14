@@ -1,0 +1,20 @@
+# Fly.io config for the Settled Socket Mode bot (always-on worker, no inbound port).
+app = "settled-bot"
+primary_region = "ams"
+
+[build]
+
+# persistent volume so the ledger survives restarts
+[mounts]
+  source = "settled_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1
+
+# Set SETTLED_RUN_MCP=1 here to also expose decisions:// over HTTP.
+[env]
+  SETTLED_LLM_PROVIDER = "openrouter"
+  SETTLED_DB_PATH = "/data/ledger.db"

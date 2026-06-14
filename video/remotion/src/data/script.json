@@ -1,0 +1,61 @@
+{
+  "project": "settled",
+  "scenes": [
+    {
+      "id": "s01_hook",
+      "vo": "The next era of work runs on agents. And agents act on what your team has already decided. But decisions don't live in a database. They live in the conversation.",
+      "target_sec": 14,
+      "capture": null,
+      "graphic": "title_card",
+      "captions": true
+    },
+    {
+      "id": "s02_problem",
+      "vo": "A team picks Postgres. Weeks later they move to Mongo, then to Aurora. The thread scrolls away. Now a new teammate, or an A I agent, acts on a decision that no longer holds. The information was there. What's missing is whether it still binds.",
+      "target_sec": 22,
+      "capture": "capture/raw/thread_scroll.mov",
+      "graphic": "scroll_overlay",
+      "captions": true
+    },
+    {
+      "id": "s03_capture",
+      "vo": "Settled watches the conversation. When someone makes a real decision, it catches it, with a confidence score, and asks a human to confirm. Precision first. If it isn't sure, it stays silent. A wrong answer is worse than none.",
+      "target_sec": 26,
+      "capture": "capture/raw/extraction.mov",
+      "graphic": "confidence_badge",
+      "captions": true
+    },
+    {
+      "id": "s04_ratify",
+      "vo": "One check mark settles it. The human stays in the loop. That's the feature, not a workaround.",
+      "target_sec": 14,
+      "capture": "capture/raw/ratify.mov",
+      "graphic": "check_zoom",
+      "captions": true
+    },
+    {
+      "id": "s05_lifecycle",
+      "vo": "Ask Settled anything. Every decision carries a status. Proposed, contested, settled, superseded. Anchored to the exact words and a permalink. Never a paraphrase.",
+      "target_sec": 24,
+      "capture": "capture/raw/settled_query.mov",
+      "graphic": "lifecycle_timeline",
+      "captions": true
+    },
+    {
+      "id": "s06_mcp",
+      "vo": "Here's what makes Settled different. It runs its own M C P server. So any external agent. Claude, an I D E bot, your C I. Can ask, is this still binding, before it acts. An agent about to act on the old decision is stopped, and handed the one that still holds. Settled becomes the guardrail for every agent in the workspace.",
+      "target_sec": 34,
+      "capture": "capture/raw/mcp_call.mov",
+      "graphic": "mcp_verdict",
+      "captions": true
+    },
+    {
+      "id": "s07_close",
+      "vo": "Retrieval tells you what was said. Settled tells you what was decided, and whether it still binds. The shared source of truth, for the humans and the agents working side by side in Slack.",
+      "target_sec": 26,
+      "capture": "capture/raw/app_home.mov",
+      "graphic": "outro_card",
+      "captions": true
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "project": "settled",
+  "title": "Settled — the decision ledger for Slack",
+  "max_duration_sec": 175,
+  "target_resolution": [1920, 1080],
+  "fps": 30,
+  "brand": {
+    "bg": "#1a1d21",
+    "fg": "#e8e8e8",
+    "accent": "#2eb67d",
+    "warn": "#ecb22e",
+    "danger": "#e01e5a",
+    "font": "Inter"
+  },
+  "voice": {
+    "engine": "elevenlabs",
+    "id": "nPczCjzI2devNBz1zQrb",
+    "model": "eleven_multilingual_v2",
+    "settings": { "stability": 0.45, "similarity_boost": 0.8, "style": 0.0, "speed": 1.0 },
+    "_note": "id=Brian (calm narrator). Swap any premade/cloned voice id. Iteration fallback below.",
+    "fallback": { "engine": "edge-tts", "id": "en-US-AndrewNeural", "rate": "+4%" }
+  },
+  "captions": true,
+  "music": null,
+  "output": {
+    "master": "out/settled-demo.mp4",
+    "youtube": "out/settled-demo-yt.mp4",
+    "thumbnail": "out/thumbnail.png"
+  },
+  "demo_workspace": "https://settledco.slack.com/",
+  "assets": {
+    "architecture": "assets/architecture.png",
+    "logo": "assets/settled-logo.png"
+  }
+}
