@@ -20,7 +20,9 @@ exposes it over an **MCP server** so any agent can ask *"is this still binding?"
 ## What makes it different
 Plenty of tools log decisions for a *person* to read later. Settled is the one an **agent** can
 query before acting — the guardrail that keeps humans *and* agents on what the team actually decided.
-See it live: `python -m demo.agent_guardrail` (an external agent course-corrects Postgres → Aurora).
+See it live: `python -m demo.agent_coding_guardrail` — a coding agent writes a Postgres migration,
+asks Settled over MCP, sees the team ratified Aurora, and **rewrites its own code before merge**
+(both files emitted to `demo/out/`). Also `python -m demo.agent_guardrail` for the minimal version.
 
 ## Run locally
 ```bash

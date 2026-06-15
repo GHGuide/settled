@@ -40,3 +40,6 @@ video/**/*.mov
 video/**/*.mp4
 video/**/*.mp3
 video/**/*.wav
+
+# Generated demo artifacts
+demo/out/

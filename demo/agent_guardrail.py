@@ -10,10 +10,17 @@ agent would: form a plan from stale context, query is_binding, then course-corre
 """
 import asyncio
 import json
+import os
+import pathlib
 import sys
 
-from mcp import ClientSession, StdioServerParameters
-from mcp.client.stdio import stdio_client
+# Self-contained + reproducible: seed a demo ledger and make sure the spawned MCP
+# server reads it (MCP's stdio client hands the child a minimal env otherwise).
+os.environ["SETTLED_DB_PATH"] = str(pathlib.Path(__file__).resolve().parent / "out" / "demo_ledger.db")
+os.environ.setdefault("SETTLED_LLM_PROVIDER", "stub")
+
+from mcp import ClientSession, StdioServerParameters  # noqa: E402
+from mcp.client.stdio import stdio_client  # noqa: E402
 
 
 def line(s=""):
@@ -21,13 +28,18 @@ def line(s=""):
 
 
 async def main():
+    from seed import seed_demo
+    pathlib.Path(os.environ["SETTLED_DB_PATH"]).parent.mkdir(exist_ok=True)
+    seed_demo.main()  # fresh datastore lifecycle so is_binding has something to answer
+
     line("┌─ External coding agent  (e.g. Claude Code / Cursor / CI bot)")
     line("│  Task: \"Set up the database migration for the platform service.\"")
     line("│  Stale context it picked up from an April thread: → use Postgres")
     line("│")
     line("│  Responsible move: ask Settled what's BINDING before touching anything.")
 
-    params = StdioServerParameters(command=sys.executable, args=["-m", "mcp_server.server"])
+    params = StdioServerParameters(command=sys.executable, args=["-m", "mcp_server.server"],
+                                   env=dict(os.environ))
     async with stdio_client(params) as (read, write):
         async with ClientSession(read, write) as s:
             await s.initialize()

@@ -28,10 +28,11 @@ its full history (Postgres → MongoDB → Aurora), each anchored to a **verbati
 
 **5. Ask the agent** — DM the **Settled** app (Chat tab): *"what did we decide about SSO?"*
 
-**6. The differentiator — agent guardrail (MCP)** — the same ledger is exposed over our `decisions://`
-MCP server. An external agent calls `is_binding("datastore")` and gets the binding decision + permalink
-*before it acts*, so it can't build on a reversed decision. Run it from the repo:
-`python -m demo.agent_guardrail`.
+**6. The differentiator — watch an agent fix its own code (MCP)** — the same ledger is exposed over
+our `decisions://` MCP server. Run `python -m demo.agent_coding_guardrail`: a coding agent writes a
+**Postgres** migration from a stale thread, calls `is_binding("datastore")` over real MCP, sees the
+team ratified **Aurora** (with the permalink), and **rewrites its own migration before merge** —
+emitting both files so the averted incident is undeniable. That's the thing a decision *log* can't do.
 
 ---
 
