@@ -1,0 +1,54 @@
+# Settled — Slack app manifest (reproducible setup).
+# Create the app at https://api.slack.com/apps → "From a manifest", paste this,
+# then enable Socket Mode and generate an app-level token (xapp-) with connections:write.
+display_information:
+  name: Settled
+  description: The decision layer for Slack — and for your agents.
+  background_color: "#1a1916"
+features:
+  bot_user:
+    display_name: Settled
+    always_online: true
+  app_home:
+    home_tab_enabled: true          # required: the App Home ledger dashboard
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+  assistant_view:                   # the Assistant (Agents & AI Apps) surface
+    assistant_description: Ask what's decided, contested, or still open.
+    suggested_prompts: []
+  slash_commands:
+    - command: /settled
+      description: Look up the current decision and history for a topic
+      usage_hint: "<topic>"
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read
+      - assistant:write
+      - channels:history
+      - channels:read
+      - groups:history
+      - chat:write
+      - commands
+      - im:history
+      - im:read
+      - im:write
+      - reactions:read
+      - reactions:write
+      - users:read
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_home_opened
+      - app_mention
+      - assistant_thread_started
+      - message.channels
+      - message.groups
+      - message.im
+      - reaction_added
+      - reaction_removed          # required: withdrawing ✅ reverses a ratification
+  interactivity:
+    is_enabled: true
+  socket_mode_enabled: true
+  token_rotation_enabled: false

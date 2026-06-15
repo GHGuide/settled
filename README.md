@@ -27,10 +27,17 @@ See it live: `python -m demo.agent_guardrail` (an external agent course-corrects
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # fill Slack tokens + OPENROUTER_API_KEY
-python -m seed.seed_demo        # seed the ledger
+python -m seed.seed_demo        # seed the ledger (fictional demo data)
 python run.py                   # Slack bot (Socket Mode)
 python -m mcp_server.server     # MCP server (stdio); SETTLED_MCP_TRANSPORT=http for HTTP
 ```
+
+Create the Slack app from [`slack_manifest.yaml`](slack_manifest.yaml) (declares App Home,
+`/settled`, the Assistant surface, and events incl. `reaction_removed`).
+
+**Tests:** `pip install -r requirements-dev.txt && pytest -q` — covers the ledger lifecycle,
+supersede/topic guards, the hash-chained audit log (incl. tamper detection), the classifier
+gates, and the MCP `is_binding` / `verify_audit_log` tools.
 
 ## Deploy (always-on for judging)
 See `DEPLOY.md` — Railway or Fly, same `Dockerfile`. Currently live on Railway.

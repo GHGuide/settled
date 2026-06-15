@@ -42,8 +42,8 @@ flowchart TD
 
 ## Key design decisions
 1. **Verbatim anchor is the source of truth.** Each decision stores the exact substring of
-   the source message + permalink. Summaries are display-only. (CogCanvas: verbatim beats
-   summarization 93% vs 19% on constraint recall.)
+   the source message + permalink. Summaries are display-only. (Motivated by CogCanvas, which
+   argues verbatim grounding substantially outperforms summarization at preserving constraints.)
 2. **Epistemic status is typed, transitions are signal-driven.** Extraction only ever
    produces `proposed`. `settled` requires a human ✅. A newer settled decision on the same
    topic supersedes the old one via a signed `supersedes` edge. (OIDA: epistemic class +

@@ -66,12 +66,13 @@ def _insert(c, statement, quote, status, owner, channel, days_ago, permalink):
 
 
 def main() -> None:
-    db.init_db()
+    # Clean slate via DROP (not DELETE): audit_log is append-only (DELETE blocked by a
+    # trigger), and DROP avoids leaving orphaned audit rows / a dangling hash chain.
     with db.cursor() as c:
-        c.execute("DELETE FROM edges")
-        c.execute("DELETE FROM ratifications")
-        c.execute("DELETE FROM anchors")
-        c.execute("DELETE FROM decisions")
+        for t in ("edges", "ratifications", "anchors", "decisions", "audit_log"):
+            c.execute(f"DROP TABLE IF EXISTS {t}")
+    db.init_db()  # recreate schema + triggers fresh
+    with db.cursor() as c:
         ids = [_insert(c, *d) for d in DECISIONS]
         # Wire the supersede chain: Postgres -> Mongo -> Aurora.
         pg, mongo, aurora = ids[0], ids[1], ids[2]

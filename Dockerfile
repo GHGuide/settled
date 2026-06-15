@@ -11,8 +11,10 @@ COPY settled/ ./settled/
 COPY mcp_server/ ./mcp_server/
 COPY seed/ ./seed/
 COPY run.py start.sh ./
-# pre-seeded ledger (real permalinks) baked in; copied to the volume on first boot
-COPY ledger.db ./seed_ledger.db
+# Generate the demo ledger snapshot AT BUILD from the seeder — reproducible, and avoids
+# depending on a git-ignored ledger.db (so `docker build` works from a fresh clone).
+# start.sh copies this onto the persistent volume on first boot.
+RUN SETTLED_DB_PATH=/app/seed_ledger.db python -m seed.seed_demo
 RUN chmod +x start.sh
 
 CMD ["./start.sh"]

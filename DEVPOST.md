@@ -54,7 +54,7 @@ it to other agents.
 - **Answer anywhere:** `/settled <topic>`, ask the assistant in natural language, or open the App
   Home dashboard (settled / contested / awaiting counts + the full ledger).
 
-## What makes it different (the part no one else does)
+## What makes it different (the part most tools don't do)
 There's a whole category of "capture decisions from Slack" tools. They all do the same thing:
 **log a decision for a person to read later.**
 
@@ -83,9 +83,10 @@ keeps humans *and* agents acting on what the team actually decided.
 ## Grounded in research
 - *Retrieval Is Not Enough: Why Organizational AI Needs Epistemic Infrastructure* (Bottino, Ferrero,
   Dosio, Beneventano, 2026) — org AI's ceiling is epistemic, not retrieval, fidelity: distinguishing
-  binding decisions from abandoned hypotheses. Settled is a first implementation.
+  binding decisions from abandoned hypotheses. Settled is a concrete implementation of that idea.
 - *CogCanvas: Verbatim-Grounded Artifact Extraction for Long LLM Conversations* (Tao An, 2025) —
-  verbatim extraction beats summarization 93% vs 19% on constraint recall. Justifies anchor quotes.
+  argues verbatim grounding substantially outperforms summarization for preserving the exact
+  constraints of a conversation. Motivates Settled's verbatim quote + permalink anchors over paraphrase.
 
 ## What's next
 Org-chart-aware ownership, embeddings for topic linking, connectors (wiki/Jira/HR) feeding context,
