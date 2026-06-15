@@ -18,7 +18,7 @@ class Candidate:
 
 def extract(text: str, context: str = "") -> list[Candidate]:
     """Return decision candidates worth a ratification ping (may be empty)."""
-    if not llm.pre_filter(text):
+    if not llm.pre_filter(text, context):
         return []
     out = []
     for e in llm.classify(text, context):
