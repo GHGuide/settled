@@ -18,6 +18,10 @@ import json
 import os
 import pathlib
 import sys
+import time
+
+# Optional pacing for screen-capture (SETTLED_DEMO_PACE=1 → readable reveal).
+_PACE = float(os.environ.get("SETTLED_DEMO_PACE", "0") or "0")
 
 OUT = pathlib.Path(__file__).resolve().parent / "out"
 OUT.mkdir(exist_ok=True)
@@ -34,8 +38,10 @@ C = {"dim": "\033[2m", "red": "\033[31m", "grn": "\033[32m", "cyn": "\033[36m",
      "b": "\033[1m", "x": "\033[0m"}
 
 
-def p(s=""):
+def p(s="", pause=None):
     print(s, flush=True)
+    if _PACE:
+        time.sleep(pause if pause is not None else _PACE)
 
 
 POSTGRES_MIGRATION = """\

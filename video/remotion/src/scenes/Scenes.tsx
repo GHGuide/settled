@@ -85,9 +85,15 @@ export const Hook: React.FC = () => {
             <div style={{ ...row, color: "#FF6B8A", fontWeight: 700 }}>⛔ SUPERSEDED — Postgres no longer binds</div>
             <div style={{ ...row, marginTop: 8 }}>→ datastore is <b style={{ color: "#2EB67D" }}>Aurora</b> now&nbsp;&nbsp;<span style={{ color: "#9AA0A6", fontSize: 21 }}>settledco.slack.com/…/p1781 · permalink</span></div>
           </div>
-          {/* agent corrects itself */}
-          <div style={{ ...row, opacity: lineC.o, marginTop: 22, color: "#2EB67D" }}>
-            <span style={{ color: "#7AA6E0" }}>agent</span> corrects → provision datastore: <b>Aurora</b> ✓
+          {/* agent rewrites its own code (the real demo's punchline) */}
+          <div style={{ opacity: lineC.o, marginTop: 22 }}>
+            <div style={{ ...row, color: "#2EB67D" }}>
+              <span style={{ color: "#7AA6E0" }}>agent</span> rewrites <b>0007_create_datastore.sql</b> → Aurora ✓
+            </div>
+            <div style={{ ...row, fontSize: 22, marginTop: 6 }}>
+              <span style={{ color: "#FF6B8A" }}>- conn: pg-primary.internal</span>
+              &nbsp;&nbsp;&nbsp;<span style={{ color: "#2EB67D" }}>+ conn: …cluster.rds.amazonaws.com</span>
+            </div>
           </div>
         </div>
         <div style={{ marginTop: 42, textAlign: "center", opacity: tag.o, transform: `translateY(${tag.y}px)`, maxWidth: 1200 }}>
