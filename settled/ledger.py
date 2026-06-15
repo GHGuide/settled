@@ -32,16 +32,25 @@ def normalize_topic(text: str) -> str:
 
 
 def same_topic(t1: str, t2: str) -> bool:
-    """Fuzzy topic match: overlap coefficient on topic words.
+    """Fuzzy topic match: overlap coefficient on topic words, with guards.
 
     Exact-string equality is too brittle ("circleci pipelines runner" vs
     "buildkite circleci pipelines runner" must collide so supersede/contest
-    edges fire). Overlap = |A∩B| / min(|A|,|B|).
+    edges fire). But a naive overlap coefficient false-merges single-token
+    topics: a terse statement like "Use Postgres" normalizes to just
+    "postgres", which would then collide with the unrelated "Postgres backups
+    nightly" (overlap 1/1 = 1.0) and wrongly supersede a still-valid decision.
+    Precision-first ("a wrong settled is worse than silence") demands two guards:
+      - if either topic is a single token, require EXACT set equality
+      - otherwise require >=2 shared tokens AND overlap >= 0.6
     """
     a, b = set(t1.split()), set(t2.split())
     if not a or not b:
         return t1 == t2
-    return len(a & b) / min(len(a), len(b)) >= 0.6
+    if min(len(a), len(b)) == 1:
+        return a == b
+    shared = a & b
+    return len(shared) >= 2 and len(shared) / min(len(a), len(b)) >= 0.6
 
 
 # ---------------------------------------------------------------- audit chain
@@ -50,16 +59,49 @@ def _last_hash(c) -> str:
     return row["hash"] if row else "0" * 64
 
 
+def _audit_digest(prev, actor, action, decision_id, body, ts) -> str:
+    return hashlib.sha256(
+        (prev + actor + action + str(decision_id) + body + ts).encode()
+    ).hexdigest()
+
+
 def audit(c, actor, action, decision_id=None, payload=None) -> None:
     ts = _now()
     prev = _last_hash(c)
     body = json.dumps(payload or {}, sort_keys=True)
-    digest = hashlib.sha256((prev + actor + action + str(decision_id) + body + ts).encode()).hexdigest()
+    digest = _audit_digest(prev, actor, action, decision_id, body, ts)
     c.execute(
         "INSERT INTO audit_log (ts, actor, action, decision_id, payload, prev_hash, hash) "
         "VALUES (?,?,?,?,?,?,?)",
         (ts, actor, action, decision_id, body, prev, digest),
     )
+
+
+def verify_chain() -> dict:
+    """Re-walk the audit log in id order and recompute every hash.
+
+    The chain is only tamper-EVIDENT if something actually checks it. Detects:
+    edited payloads, a broken prev_hash link, or reordering. Returns the first
+    offending row id so a judge/agent can see exactly where integrity breaks.
+    (The DB also blocks UPDATE/DELETE on audit_log via triggers; this catches
+    tampering that bypasses the app, e.g. raw SQL on the file.)
+    """
+    with db.cursor() as c:
+        rows = c.execute(
+            "SELECT id, ts, actor, action, decision_id, payload, prev_hash, hash "
+            "FROM audit_log ORDER BY id ASC"
+        ).fetchall()
+    prev = "0" * 64
+    for r in rows:
+        actor = r["actor"] if r["actor"] is not None else ""
+        body = r["payload"] if r["payload"] is not None else ""
+        if r["prev_hash"] != prev:
+            return {"ok": False, "row": r["id"], "error": "prev_hash link broken"}
+        recomputed = _audit_digest(r["prev_hash"], actor, r["action"], r["decision_id"], body, r["ts"])
+        if r["hash"] != recomputed:
+            return {"ok": False, "row": r["id"], "error": "hash mismatch (row tampered)"}
+        prev = r["hash"]
+    return {"ok": True, "rows": len(rows)}
 
 
 # ------------------------------------------------------------- create / read
@@ -88,7 +130,7 @@ def create_candidate(*, statement, quote, permalink, message_ts, channel_id,
         rivals = [r for r in cand if same_topic(topic, r["topic"])]
         for r in rivals:
             c.execute(
-                "INSERT INTO edges (from_id, to_id, type, created_ts) VALUES (?,?,?,?)",
+                "INSERT OR IGNORE INTO edges (from_id, to_id, type, created_ts) VALUES (?,?,?,?)",
                 (did, r["id"], "contests", now),
             )
         audit(c, actor=author_user or "system", action="propose", decision_id=did,
@@ -114,13 +156,26 @@ def get_decision(decision_id: int):
                 "edges": [dict(e) for e in edges]}
 
 
+def _norm_quote(q: str) -> str:
+    """Whitespace/case-insensitive key so trivially-different quotes dedup."""
+    return " ".join((q or "").lower().split())
+
+
 def has_quote(quote: str) -> bool:
-    """Dedup: has this exact decision already been recorded (and not rejected)?"""
+    """Dedup: has this decision already been recorded (and not rejected)?
+
+    Normalized (case/whitespace-insensitive) so a re-post with different spacing
+    or casing doesn't create a duplicate proposal.
+    """
+    nq = _norm_quote(quote)
+    if not nq:
+        return False
     with db.cursor() as c:
-        row = c.execute(
-            "SELECT 1 FROM anchors a JOIN decisions d ON d.id=a.decision_id "
-            "WHERE a.quote=? AND d.status<>'rejected' LIMIT 1", (quote,)).fetchone()
-        return row is not None
+        rows = c.execute(
+            "SELECT a.quote FROM anchors a JOIN decisions d ON d.id=a.decision_id "
+            "WHERE d.status<>'rejected'"
+        ).fetchall()
+    return any(_norm_quote(r["quote"]) == nq for r in rows)
 
 
 def find_by_ratify_msg(msg_ts: str):
@@ -136,6 +191,12 @@ def ratify(decision_id: int, user_id: str) -> dict:
         d = c.execute("SELECT * FROM decisions WHERE id=?", (decision_id,)).fetchone()
         if not d:
             return {"ok": False, "error": "not found"}
+        # transition guard: only proposed/contested can be settled. Idempotent if
+        # already settled; refuse to resurrect a superseded/rejected decision.
+        if d["status"] == "settled":
+            return {"ok": True, "status": "settled", "superseded": [], "noop": True}
+        if d["status"] in ("superseded", "rejected"):
+            return {"ok": False, "error": f"cannot ratify a {d['status']} decision"}
         c.execute("INSERT INTO ratifications (decision_id, user_id, action, ts) VALUES (?,?,?,?)",
                   (decision_id, user_id, "ratify", now))
         c.execute("UPDATE decisions SET status='settled', updated_ts=? WHERE id=?", (now, decision_id))
@@ -159,8 +220,11 @@ def ratify(decision_id: int, user_id: str) -> dict:
 def reject(decision_id: int, user_id: str) -> dict:
     now = _now()
     with db.cursor() as c:
-        if not c.execute("SELECT 1 FROM decisions WHERE id=?", (decision_id,)).fetchone():
+        d = c.execute("SELECT status FROM decisions WHERE id=?", (decision_id,)).fetchone()
+        if not d:
             return {"ok": False, "error": "not found"}
+        if d["status"] in ("settled", "superseded", "rejected"):
+            return {"ok": False, "error": f"cannot reject a {d['status']} decision"}
         c.execute("INSERT INTO ratifications (decision_id, user_id, action, ts) VALUES (?,?,?,?)",
                   (decision_id, user_id, "reject", now))
         c.execute("UPDATE decisions SET status='rejected', updated_ts=? WHERE id=?", (now, decision_id))
@@ -185,9 +249,11 @@ def query(text: str) -> list[dict]:
             score = sum(1 for t in terms if t in hay)
             if score:
                 scored.append((score, r))
-        scored.sort(key=lambda x: (-x[0], x[1]["updated_ts"]), reverse=False)
+        # highest score first; tie-break NEWEST first (ISO ts sorts chronologically),
+        # so callers reading scored[0] get the current decision, not a stale one.
+        scored.sort(key=lambda x: (x[0], x[1]["updated_ts"]), reverse=True)
         out = []
-        for _, r in sorted(scored, key=lambda x: -x[0])[:10]:
+        for _, r in scored[:10]:
             anchor = c.execute(
                 "SELECT * FROM anchors WHERE decision_id=? LIMIT 1", (r["id"],)
             ).fetchone()
