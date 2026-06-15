@@ -9,7 +9,11 @@ from . import agent, blocks, config, db, extraction, ledger
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("settled")
 
-app = App(token=config.SLACK_BOT_TOKEN, signing_secret=config.SLACK_SIGNING_SECRET)
+# token_verification_enabled=False: don't make a live auth.test call at import time
+# (keeps the module importable for tests/offline; the token is really validated when
+# Socket Mode connects in run.py, and presence is checked by config.require_runtime()).
+app = App(token=config.SLACK_BOT_TOKEN, signing_secret=config.SLACK_SIGNING_SECRET,
+          token_verification_enabled=False)
 
 # ----------------------------------------------------------- assistant surface
 assistant = Assistant()
@@ -74,7 +78,7 @@ def _recent_context(client, channel: str, ts: str, thread_ts: str | None) -> str
 
 @app.event("message")
 def on_message(event, client, logger):
-    # Ignore bot messages, edits, joins, DMs (assistant handles those), etc.
+    # Ignore bot messages (incl. our own), edits/joins/etc, and DMs (assistant handles those).
     if event.get("subtype") or event.get("bot_id") or event.get("channel_type") == "im":
         return
     text = event.get("text", "")
@@ -82,64 +86,105 @@ def on_message(event, client, logger):
     ts = event["ts"]
     user = event.get("user")
 
-    context = _recent_context(client, channel, ts, event.get("thread_ts"))
-    candidates = extraction.extract(text, context)
+    try:
+        context = _recent_context(client, channel, ts, event.get("thread_ts"))
+        candidates = extraction.extract(text, context)
+    except Exception as e:  # noqa: BLE001 — never let detection crash the listener
+        log.warning("extraction failed in %s: %s", channel, e)
+        return
     if not candidates:
         return  # silent — noise gate / below confidence
 
     permalink = _permalink(client, channel, ts)
     for candidate in candidates:
-        if ledger.has_quote(candidate.quote):
-            continue  # dedup — already recorded
-        did = ledger.create_candidate(
-            statement=candidate.statement, quote=candidate.quote, permalink=permalink,
-            message_ts=ts, channel_id=channel, author_user=user, confidence=candidate.confidence,
-        )
-        posted = client.chat_postMessage(
-            channel=channel, thread_ts=ts,
-            blocks=blocks.ratification_prompt(did, candidate.statement, candidate.quote,
-                                              candidate.confidence, permalink),
-            text="Looks like a decision — react ✅ to settle it.",
-        )
-        ledger.set_ratify_msg_ts(did, posted["ts"])
-        for emoji in (config.RATIFY_EMOJI, config.REJECT_EMOJI):
-            try:
-                client.reactions_add(channel=channel, timestamp=posted["ts"], name=emoji)
-            except Exception:  # noqa: BLE001
-                pass
+        try:
+            if ledger.has_quote(candidate.quote):
+                continue  # dedup — already recorded
+            did = ledger.create_candidate(
+                statement=candidate.statement, quote=candidate.quote, permalink=permalink,
+                message_ts=ts, channel_id=channel, author_user=user, confidence=candidate.confidence,
+            )
+            posted = client.chat_postMessage(
+                channel=channel, thread_ts=ts,
+                blocks=blocks.ratification_prompt(did, candidate.statement, candidate.quote,
+                                                  candidate.confidence, permalink),
+                text="Looks like a decision — react ✅ to settle it.",
+            )
+            ledger.set_ratify_msg_ts(did, posted["ts"])
+            for emoji in (config.RATIFY_EMOJI, config.REJECT_EMOJI):
+                try:
+                    client.reactions_add(channel=channel, timestamp=posted["ts"], name=emoji)
+                except Exception as e:  # noqa: BLE001 — pre-seeding reactions is best-effort
+                    log.debug("reactions_add failed: %s", e)
+        except Exception as e:  # noqa: BLE001 — one bad candidate must not drop the rest
+            log.warning("failed to record candidate in %s: %s", channel, e)
 
 
-def _handle_reaction(event, client, ratify: bool):
+def _is_self(event, context) -> bool:
+    """True if the reactor is our own bot (we pre-seed ✅/❌) — must never self-ratify."""
+    return bool(context) and event.get("user") == context.get("bot_user_id")
+
+
+def _handle_reaction(event, client, context, ratify: bool):
+    if _is_self(event, context):
+        return  # the bot's own pre-seeded reaction must not count as a human vote
     item = event.get("item", {})
     msg_ts = item.get("ts")
     if not msg_ts:
         return
-    row = ledger.find_by_ratify_msg(msg_ts)
+    row = ledger.find_by_ratify_msg(msg_ts, item.get("channel"))
     if not row:
         return
     user = event.get("user")
     if ratify:
         res = ledger.ratify(row["id"], user)
+        if not res.get("ok"):
+            return
         note = "✅ *Settled.*"
         if res.get("superseded"):
             note += f" Superseded prior decision(s): {res['superseded']}."
     else:
-        ledger.reject(row["id"], user)
+        res = ledger.reject(row["id"], user)
+        if not res.get("ok"):
+            return
         note = "❌ Dismissed — not recorded as a decision."
     try:
         client.chat_postMessage(channel=item["channel"], thread_ts=msg_ts, text=note)
-    except Exception:  # noqa: BLE001
-        pass
+    except Exception as e:  # noqa: BLE001
+        log.warning("reaction note post failed: %s", e)
     _publish_home(client, user)
 
 
 @app.event("reaction_added")
-def on_reaction_added(event, client):
+def on_reaction_added(event, client, context):
     name = event.get("reaction")
     if name == config.RATIFY_EMOJI:
-        _handle_reaction(event, client, ratify=True)
+        _handle_reaction(event, client, context, ratify=True)
     elif name == config.REJECT_EMOJI:
-        _handle_reaction(event, client, ratify=False)
+        _handle_reaction(event, client, context, ratify=False)
+
+
+@app.event("reaction_removed")
+def on_reaction_removed(event, client, context):
+    """Removing your ✅ reverses the ratification (restores anything it superseded),
+    so an accidental settle is recoverable rather than permanent."""
+    if _is_self(event, context) or event.get("reaction") != config.RATIFY_EMOJI:
+        return
+    item = event.get("item", {})
+    row = ledger.find_by_ratify_msg(item.get("ts"), item.get("channel"))
+    if not row:
+        return
+    res = ledger.unratify(row["id"], event.get("user"))
+    if not res.get("ok"):
+        return
+    try:
+        msg = "↩️ Ratification withdrawn — back to *proposed*."
+        if res.get("restored"):
+            msg += f" Restored prior decision(s): {res['restored']}."
+        client.chat_postMessage(channel=item["channel"], thread_ts=item.get("ts"), text=msg)
+    except Exception as e:  # noqa: BLE001
+        log.warning("unratify note post failed: %s", e)
+    _publish_home(client, event.get("user"))
 
 
 @app.command("/settled")

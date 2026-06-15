@@ -178,9 +178,39 @@ def has_quote(quote: str) -> bool:
     return any(_norm_quote(r["quote"]) == nq for r in rows)
 
 
-def find_by_ratify_msg(msg_ts: str):
+def find_by_ratify_msg(msg_ts: str, channel_id: str | None = None):
     with db.cursor() as c:
+        if channel_id:  # ts is channel-scoped — match both to avoid cross-channel collision
+            return c.execute(
+                "SELECT * FROM decisions WHERE ratify_msg_ts=? AND channel_id=?",
+                (msg_ts, channel_id)).fetchone()
         return c.execute("SELECT * FROM decisions WHERE ratify_msg_ts=?", (msg_ts,)).fetchone()
+
+
+def unratify(decision_id: int, user_id: str) -> dict:
+    """Reverse a ✅ (the ratifier removed their reaction). Returns the decision to
+    'proposed' and RESTORES any decisions it had superseded. Only valid from 'settled'
+    — so an accidental ratification is fully recoverable instead of permanent."""
+    now = _now()
+    with db.cursor() as c:
+        d = c.execute("SELECT status FROM decisions WHERE id=?", (decision_id,)).fetchone()
+        if not d:
+            return {"ok": False, "error": "not found"}
+        if d["status"] != "settled":
+            return {"ok": False, "error": f"not settled (is {d['status']})"}
+        restored = []
+        for s in c.execute("SELECT to_id FROM edges WHERE from_id=? AND type='supersedes'",
+                           (decision_id,)).fetchall():
+            c.execute("UPDATE decisions SET status='settled', updated_ts=? "
+                      "WHERE id=? AND status='superseded'", (now, s["to_id"]))
+            c.execute("DELETE FROM edges WHERE from_id=? AND to_id=? AND type='supersedes'",
+                      (decision_id, s["to_id"]))
+            restored.append(s["to_id"])
+        c.execute("DELETE FROM ratifications WHERE decision_id=? AND user_id=? AND action='ratify'",
+                  (decision_id, user_id))
+        c.execute("UPDATE decisions SET status='proposed', updated_ts=? WHERE id=?", (now, decision_id))
+        audit(c, actor=user_id, action="unratify", decision_id=decision_id, payload={"restored": restored})
+        return {"ok": True, "status": "proposed", "restored": restored}
 
 
 # ------------------------------------------------------------- transitions
