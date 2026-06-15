@@ -10,9 +10,14 @@ The model NEVER sets `settled` on its own. Only a human ✅ does. Wrong > silent
 """
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 
 from . import db
+
+_STOP = {"the", "a", "an", "we", "will", "should", "to", "for", "of", "and",
+         "or", "is", "are", "use", "go", "with", "on", "in", "lets", "let",
+         "our", "this", "that", "be", "it", "do", "decided", "decision"}
 
 
 def _now() -> str:
@@ -21,13 +26,8 @@ def _now() -> str:
 
 def normalize_topic(text: str) -> str:
     """Cheap topic key so related decisions group together."""
-    import re
-
     words = re.findall(r"[a-z0-9]+", text.lower())
-    stop = {"the", "a", "an", "we", "will", "should", "to", "for", "of", "and",
-            "or", "is", "are", "use", "go", "with", "on", "in", "lets", "let",
-            "our", "this", "that", "be", "it", "do", "decided", "decision"}
-    keep = [w for w in words if w not in stop and len(w) > 2]
+    keep = [w for w in words if w not in _STOP and len(w) > 2]
     return " ".join(sorted(set(keep))[:6]) or text.lower()[:40]
 
 
@@ -269,8 +269,11 @@ def query(text: str) -> list[dict]:
     Returns enriched rows with the binding anchor and supersede history so callers
     (the /settled command and the MCP server) can render the full lifecycle.
     """
-    topic = normalize_topic(text)
-    terms = [t for t in topic.split() if t]
+    # Keep 2-char tokens (CI, QA, ML, SSO) that normalize_topic would drop, so
+    # is_binding("CI") doesn't false-negative. Fall back to the raw text if empty.
+    terms = [t for t in re.findall(r"[a-z0-9]+", text.lower()) if len(t) >= 2 and t not in _STOP]
+    if not terms and text.strip():
+        terms = [text.strip().lower()]
     with db.cursor() as c:
         rows = c.execute("SELECT * FROM decisions ORDER BY updated_ts DESC").fetchall()
         scored = []
