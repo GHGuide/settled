@@ -53,15 +53,15 @@ const Caption: React.FC<{ children: React.ReactNode; o?: number }> = ({ children
 export const Hook: React.FC = () => {
   const { fps } = useVideoConfig();
   const f = useCurrentFrame();
-  // reveal delays synced to the 20.6s VO beats
+  // reveal delays synced to the 23.3s VO beats
   const eyebrow = useRise(2), card = useRise(8);
-  const lineA = useRise(100);   // "...build on Postgres"
-  const lineB = useRise(215);   // "it checks Settled"
-  const interceptO = useRise(270).o;  // "Superseded..."
-  const interceptPop = spring({ frame: f - 270, fps, config: { damping: 12, mass: 0.8 } });
-  const redFlash = interpolate(f, [270, 285, 320], [0, 0.16, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const lineC = useRise(385);   // "the agent fixes itself"
-  const tag = useRise(470);     // "That's Settled..."
+  const lineA = useRise(113);   // "...build on Postgres"
+  const lineB = useRise(243);   // "it asks Settled"
+  const interceptO = useRise(305).o;  // "that's superseded..."
+  const interceptPop = spring({ frame: f - 305, fps, config: { damping: 12, mass: 0.8 } });
+  const redFlash = interpolate(f, [305, 322, 361], [0, 0.16, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const lineC = useRise(434);   // "it rewrites its own code"
+  const tag = useRise(530);     // "That's Settled..."
   const row: React.CSSProperties = { fontFamily: T.mono, fontSize: 27, lineHeight: 1.5, color: "#E8E8E8" };
   return (
     <Cream>
