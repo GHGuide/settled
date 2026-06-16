@@ -1,5 +1,8 @@
 # Settled — the decision layer for Slack
 
+[![tests](https://github.com/GHGuide/settled/actions/workflows/test.yml/badge.svg)](https://github.com/GHGuide/settled/actions/workflows/test.yml)
+&nbsp;Python · Slack Bolt · Model Context Protocol · SQLite (hash-chained audit) · MIT
+
 **Retrieval tells you what was *said*. Settled tells you what was *decided* — and whether it still binds.**
 
 Teams run AI agents in Slack now. An agent acts on whatever it reads — even a decision the team
