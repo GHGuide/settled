@@ -187,6 +187,71 @@ def on_reaction_removed(event, client, context):
     _publish_home(client, event.get("user"))
 
 
+# ----------------------------------------------------- interactive buttons / modal
+def _act_on_prompt(body, client, ratify: bool):
+    did = int(body["actions"][0]["value"])
+    user = body["user"]["id"]
+    detail = ledger.get_decision(did)
+    if not detail:
+        return
+    statement = detail["decision"]["statement"]
+    if ratify:
+        res = ledger.ratify(did, user)
+        if not res.get("ok"):
+            return
+        blks = blocks.outcome_blocks("settled", statement, user, res.get("superseded"))
+    else:
+        res = ledger.reject(did, user)
+        if not res.get("ok"):
+            return
+        blks = blocks.outcome_blocks("rejected", statement, user)
+    ch = (body.get("container") or {}).get("channel_id") or (body.get("channel") or {}).get("id")
+    ts = (body.get("container") or {}).get("message_ts") or (body.get("message") or {}).get("ts")
+    try:
+        client.chat_update(channel=ch, ts=ts, blocks=blks, text="Decision updated.")
+    except Exception as e:  # noqa: BLE001
+        log.warning("chat_update failed: %s", e)
+    _publish_home(client, user)
+
+
+@app.action("ratify_btn")
+def on_ratify_btn(ack, body, client):
+    ack()
+    _act_on_prompt(body, client, ratify=True)
+
+
+@app.action("dismiss_btn")
+def on_dismiss_btn(ack, body, client):
+    ack()
+    _act_on_prompt(body, client, ratify=False)
+
+
+@app.action("ratify_home")
+def on_ratify_home(ack, body, client):
+    ack()
+    did = int(body["actions"][0]["value"])
+    user = body["user"]["id"]
+    ledger.ratify(did, user)
+    _publish_home(client, user)
+
+
+@app.action("view_decision")
+def on_view_decision(ack, body, client):
+    ack()
+    detail = ledger.get_decision(int(body["actions"][0]["value"]))
+    if not detail:
+        return
+    try:
+        client.views_open(trigger_id=body["trigger_id"], view=blocks.decision_modal(detail))
+    except Exception as e:  # noqa: BLE001
+        log.warning("views_open failed: %s", e)
+
+
+@app.action("open_source")
+def on_open_source(ack):
+    ack()  # URL button — Slack opens the link; just ack the interaction
+
+
 @app.command("/settled")
 def on_settled(ack, command, respond):
     ack()
