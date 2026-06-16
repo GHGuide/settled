@@ -66,6 +66,17 @@ keeps humans *and* agents acting on what the team actually decided.
 
 > Retrieval tells you what was *said*. Settled tells you what was *decided* — and whether it still binds.
 
+## Measured impact
+We built a benchmark (`python -m bench.benchmark`) over 8 threads where a decision was reversed.
+An agent that retrieves "a decision on this topic" but can't rank by status acts on a **stale**
+decision **~60% of the time** (100% if it grabs the earliest). Settled's `is_binding`: **0%** — it
+returns the ratified, non-superseded decision, and **abstains** when nothing is binding.
+
+And it serves *every* agent, not one feature — `python -m demo.breadth` shows a **CI gate** (blocks a
+deploy targeting the reversed datastore), an **IDE assistant** (refuses to scaffold a contested SSO
+choice), and a **coding agent** (installs the Aurora client, not the Postgres-only driver) all
+consulting the same `decisions://` server.
+
 ## How we built it
 - **Slack:** Bolt for Python, Socket Mode (no public URL). Events API for messages/reactions,
   `/settled` slash command, Block Kit, App Home, and the Assistant (Agents & AI Apps) surface.
