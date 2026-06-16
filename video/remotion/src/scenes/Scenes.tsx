@@ -312,6 +312,12 @@ export const Close: React.FC = () => {
         </div>
         <Headline size={130} style={{ marginTop: 64, opacity: b.o }}>Settled</Headline>
         <div style={{ marginTop: 20, opacity: c.o }}><Caption>The shared source of truth for humans and agents in Slack.</Caption></div>
+        <div style={{ marginTop: 30, opacity: useRise(78).o, display: "flex", gap: 14 }}>
+          {["live in Slack", "decisions:// over MCP", "github.com/GHGuide/settled"].map((t) => (
+            <div key={t} style={{ fontFamily: T.mono, fontSize: 20, color: T.dim,
+              padding: "9px 17px", borderRadius: 999, border: `1px solid ${T.line}`, background: "#FBFAF5" }}>{t}</div>
+          ))}
+        </div>
       </AbsoluteFill>
     </Cream>
   );

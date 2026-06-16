@@ -91,3 +91,42 @@ Each step idempotent + resumable. Re-running with unchanged inputs is a no-op.
 - ISOLATION: each project's captures/vo/out stay inside that project's folder. The template
   is shared; the artifacts never cross project boundaries.
 ```
+
+## LESSONS LEARNED (v1 → v14) — bake these in, each prevents a real failure
+
+**Aesthetic (locked):** warm cream bg `#F2EFE7`, clay accent `#C9603A`, serif Fraunces (headlines),
+Inter (body), Roboto Mono (code). Female "Claude-presentation" VO — ElevenLabs **Sarah**
+(`EXAVITQu4vr4xnSDxMaL`, `eleven_multilingual_v2`). Reject: dark generic-keynote look, male/generic AI voice.
+
+**Lead with the differentiator.** The cold-open's first ~15s must show the ONE thing that's unique
+(here: an agent caught by the guardrail, rewriting its own code), not a generic problem statement.
+
+**Capture is the failure-prone step. Run it on a pristine stage:**
+- **Freeze the demo data state FIRST** (final seed) so every clip matches — else counts/contents drift between scenes.
+- **Quit Magnet** (blocks computer-use clicks) and **Wispr Flow** (`pkill -9 -f "Wispr Flow"` — its floating overlay blocks dialog clicks).
+- `open_application` the target app → it returns to fullscreen on screen 0. Single display.
+- **Record STATIC** (no scrolling during capture) — scrolling footage drifts the virtual camera into clutter.
+- **Move the cursor to the sidebar before recording** (kills hover toolbars).
+- Scroll clutter off-screen first (Slack's "invites sent" GIF, "50% off Pro" promo).
+- **GATE — verify ONE raw frame (`ffmpeg -ss N -i raw.mov -frames:v 1 chk.png`) BEFORE cropping.**
+  This is the check that catches another window stealing screen-0 foreground / tiling beside the app
+  (the contamination that leaked other content). Never crop+wire a clip you haven't eyeballed.
+- Crop uniformly: `crop=3600:2100:0:60,scale=1920:-2` → 1920×1120 (retina screen 0).
+
+**Camera (Screen-Studio style):** `CameraRig.tsx` — spring-eased focal `{x,y,z}` keyframes + motion blur
++ synthetic cursor. **Compute focal x/y/z from measured content coords** to crop residual clutter
+(sidebar/GIF), and **verify each clip with `remotion still --frame=N` before any full render.**
+
+**VO timing:** scene length = `max(VO_dur + hold, clipLen)`. **Regenerate VO for CHANGED scenes only**
+(cost + avoids drift). **Whenever a scene's VO duration changes, re-sync its reveal frame-delays** —
+animation desyncs otherwise.
+
+**Wire footage → scene carefully** (a past bug had `home.mp4`/`apphome.mp4` swapped). Name clips by role.
+
+**Render:** `npx remotion render Settled out/x.mp4 --codec=h264 --crf=20 --concurrency=2`.
+**Default concurrency OOMs (exit 137) — always `--concurrency=2`.**
+
+**QA gate before shipping:** extract a mid-frame from EVERY scene → tile montage (`ffmpeg tile`) →
+eyeball for clutter / content-match / VO-sync. Re-render only flagged scenes. Confirm duration < cap (3:00).
+
+**Deliver:** upload to YouTube (allowed hosts: YouTube/Vimeo/Facebook/Youku) → link in the submission.
