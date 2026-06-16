@@ -23,9 +23,28 @@ exposes it over an **MCP server** so any agent can ask *"is this still binding?"
 ## What makes it different
 Plenty of tools log decisions for a *person* to read later. Settled is the one an **agent** can
 query before acting — the guardrail that keeps humans *and* agents on what the team actually decided.
-See it live: `python -m demo.agent_coding_guardrail` — a coding agent writes a Postgres migration,
-asks Settled over MCP, sees the team ratified Aurora, and **rewrites its own code before merge**
-(both files emitted to `demo/out/`). Also `python -m demo.agent_guardrail` for the minimal version.
+
+|  | Decision-log tools | RAG / Slack search | **Settled** |
+|---|---|---|---|
+| Captures decisions | ✅ | ➖ | ✅ |
+| Knows which one still **binds** | ❌ | ❌ | ✅ (epistemic status) |
+| Verbatim quote + permalink anchor | ➖ | ❌ | ✅ |
+| Human ratifies before "settled" | ➖ | ❌ | ✅ |
+| **An agent can query it before acting** | ❌ | ❌ | ✅ **(MCP `decisions://`)** |
+| Tamper-evident audit trail | ❌ | ❌ | ✅ (hash chain + verify) |
+
+See it live — a coding agent rewrites its own migration before merge:
+```text
+$ python -m demo.agent_coding_guardrail
+│  ✍️  wrote 0007_create_datastore.postgres.sql  (targets Postgres)
+│  → mcp.call(decisions://, is_binding, {topic: "datastore"})
+│  ← {"binding": true, "statement": "Move primary datastore to Aurora", "permalink": …}
+│  ⛔ CONFLICT  my migration targets Postgres — but the team ratified Aurora
+│  ✅ rewrote → 0007_create_datastore.aurora.sql  (targets Aurora)
+│      - conn: pg-primary.internal   + conn: …cluster.rds.amazonaws.com
+```
+Also: `python -m bench.benchmark` (naive agents act on a stale decision ~60% of the time, Settled 0%)
+and `python -m demo.breadth` (a CI gate, an IDE assistant, and a coding agent on one ledger).
 
 ## Run locally
 ```bash
@@ -51,10 +70,12 @@ See `DEPLOY.md` — Railway or Fly, same `Dockerfile`. Currently live on Railway
 | Path | Role |
 |---|---|
 | `settled/` | config, db, ledger, **llm** (classify+answer), extraction, blocks, slack_app, agent |
-| `mcp_server/server.py` | `decisions://` MCP server (stdio + streamable-HTTP) |
-| `demo/agent_guardrail.py` | live proof: external agent blocked by a superseded decision |
-| `seed/` | demo ledger seeders (DB-only + live-Slack) |
-| `video/` | Remotion video project + pipeline (the demo film) + architecture PNG |
+| `mcp_server/server.py` | `decisions://` MCP server (stdio + streamable-HTTP): `is_binding`, `query_decisions`, `verify_audit_log` |
+| `demo/agent_coding_guardrail.py` | the wow demo: a coding agent rewrites its own migration after checking Settled |
+| `demo/breadth.py` · `demo/agent_guardrail.py` | 3 agents on one ledger · the minimal guardrail |
+| `bench/benchmark.py` | quantified impact: stale-action rate, naive vs Settled |
+| `tests/` | 29 pytest tests (lifecycle, audit-chain tamper detection, MCP, blocks) |
+| `seed/` · `video/` | demo ledger seeders · Remotion video project + architecture PNG |
 
 ## Stack
 Python · Slack Bolt · SQLite (hash-chained audit) · Model Context Protocol · OpenRouter (DeepSeek).
