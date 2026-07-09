@@ -5,68 +5,68 @@
     {
       "id": "s01_hook",
       "mp3": "s01_hook.mp3",
-      "duration": 13.978
+      "duration": 23.266
     },
     {
       "id": "s02_problem",
       "mp3": "s02_problem.mp3",
-      "duration": 8.545
+      "duration": 11.238
     },
     {
       "id": "s03_split",
       "mp3": "s03_split.mp3",
-      "duration": 17.508
+      "duration": 14.675
     },
     {
       "id": "s04_capture",
       "mp3": "s04_capture.mp3",
-      "duration": 9.799
+      "duration": 9.427
     },
     {
       "id": "s05_ratify",
       "mp3": "s05_ratify.mp3",
-      "duration": 5.619
+      "duration": 4.133
     },
     {
       "id": "s06_contested",
       "mp3": "s06_contested.mp3",
-      "duration": 7.012
+      "duration": 6.92
     },
     {
       "id": "s07_lifecycle",
       "mp3": "s07_lifecycle.mp3",
-      "duration": 8.266
+      "duration": 9.892
     },
     {
       "id": "s08_assistant",
       "mp3": "s08_assistant.mp3",
-      "duration": 6.502
+      "duration": 6.594
     },
     {
       "id": "s09_query",
       "mp3": "s09_query.mp3",
-      "duration": 6.827
+      "duration": 6.548
     },
     {
       "id": "s10_apphome",
       "mp3": "s10_apphome.mp3",
-      "duration": 6.316
+      "duration": 6.362
     },
     {
       "id": "s11_difference",
       "mp3": "s11_difference.mp3",
-      "duration": 10.867
+      "duration": 10.356
     },
     {
       "id": "s12_mcp",
       "mp3": "s12_mcp.mp3",
-      "duration": 12.678
+      "duration": 11.61
     },
     {
       "id": "s13_close",
       "mp3": "s13_close.mp3",
-      "duration": 8.173
+      "duration": 9.613
     }
   ],
-  "total_duration": 122.09
+  "total_duration": 130.63
 }
