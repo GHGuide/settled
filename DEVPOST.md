@@ -69,8 +69,9 @@ keeps humans *and* agents acting on what the team actually decided.
 ## Measured impact
 We built a benchmark (`python -m bench.benchmark`) over 8 threads where a decision was reversed.
 An agent that retrieves "a decision on this topic" but can't rank by status acts on a **stale**
-decision **~60% of the time** (100% if it grabs the earliest). Settled's `is_binding`: **0%** — it
-returns the ratified, non-superseded decision, and **abstains** when nothing is binding.
+decision an expected **~60% of the time** (a modeled random-pick rate; **100%** if it just grabs
+the earliest). Settled's `is_binding`: a measured **0%** — it returns the ratified, non-superseded
+decision, and **abstains** when nothing is binding.
 
 And it serves *every* agent, not one feature — `python -m demo.breadth` shows a **CI gate** (blocks a
 deploy targeting the reversed datastore), an **IDE assistant** (refuses to scaffold a contested SSO
@@ -87,18 +88,19 @@ consulting the same `decisions://` server.
   an **append-only, hash-chained audit log** (SHA-256(prev + content + ts)) toward EU AI Act / DORA
   traceability.
 - **MCP server (`decisions://`):** built on the official MCP SDK; resources (`decisions://all`,
-  `settled`, `awaiting`, `{id}`) + tools (`is_binding`, `query_decisions`). Runs over stdio for local
-  agents and streamable-HTTP for remote ones. `demo/agent_guardrail.py` shows a real external agent
-  course-correcting because of it.
+  `settled`, `awaiting`, `{id}`) + tools (`is_binding`, `query_decisions`, `verify_audit_log`). Runs
+  over stdio for local agents and streamable-HTTP for remote ones. `demo/agent_coding_guardrail.py`
+  shows a real coding agent rewriting its own migration because of it.
 - Deployed always-on (Railway) so the agent is live for judging.
 
 ## Grounded in research
 - *Retrieval Is Not Enough: Why Organizational AI Needs Epistemic Infrastructure* (Bottino, Ferrero,
   Dosio, Beneventano, 2026) — org AI's ceiling is epistemic, not retrieval, fidelity: distinguishing
   binding decisions from abandoned hypotheses. Settled is a concrete implementation of that idea.
-- *CogCanvas: Verbatim-Grounded Artifact Extraction for Long LLM Conversations* (Tao An, 2025) —
-  argues verbatim grounding substantially outperforms summarization for preserving the exact
-  constraints of a conversation. Motivates Settled's verbatim quote + permalink anchors over paraphrase.
+- *Verbatim Chunks Beat Extracted Artifacts: A Controlled Ablation of Memory Representations for
+  Long LLM Conversations* (Tao An, arXiv:2601.00821) — finds that keeping the verbatim source
+  outperforms storing extracted/summarized artifacts for preserving a conversation's exact
+  constraints. Motivates Settled's verbatim quote + permalink anchor kept alongside the summary.
 
 ## What's next
 Org-chart-aware ownership, embeddings for topic linking, connectors (wiki/Jira/HR) feeding context,
