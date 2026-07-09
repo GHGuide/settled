@@ -21,7 +21,7 @@ export const RemotionRoot: React.FC = () => (
       durationInFrames={1}
       fps={FPS}
       width={2400}
-      height={1400}
+      height={1180}
     />
   </>
 );

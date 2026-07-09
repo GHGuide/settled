@@ -35,26 +35,29 @@ export const Architecture: React.FC = () => (
     </div>
 
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Box title="Slack" accent={T.line} w={330}
-        lines={["#channels & threads", "/settled command", "App Home dashboard", "Assistant (DM)", "✅ / ❌ reactions"]} />
+      <Box title="Slack" accent={T.line} w={335}
+        lines={["#channels & threads", "/settled command", "App Home + Ratify/Details buttons", "Assistant (DM / @mention)", "human ✅ / ❌ ratify"]} />
       <Arrow label="messages · commands" />
       <div style={{ display: "flex", flexDirection: "column", gap: 18, alignItems: "center" }}>
-        <Box title="Settled · Bolt app" accent={T.clay} w={420}
-          lines={["extraction: noise-gate → LLM classifier", "confidence gate + human ✅ ratify", "lifecycle + signed supersede/contest edges", "hash-chained audit log"]} />
+        <Box title="Settled · Bolt app" accent={T.clay} w={430}
+          lines={["extraction: noise-gate → LLM classifier", "confidence gate + human ✅ ratify (only a human settles)", "proposed → contested → settled → superseded", "signed supersede / contest edges"]} />
         <div style={{ color: T.dim, fontSize: 34 }}>↕</div>
-        <Box title="SQLite ledger" accent={T.line} w={420}
-          lines={["decisions · anchors (verbatim + permalink)", "edges · ratifications · audit_log"]} />
+        <Box title="SQLite ledger" accent={T.line} w={430}
+          lines={["decisions · anchors (verbatim quote + permalink)", "edges · ratifications", "append-only hash-chained audit_log · verify_chain()"]} />
       </div>
       <Arrow label="same ledger" />
-      <Box title="MCP server" accent={T.green} w={340}
-        lines={["decisions:// resources", "is_binding(topic)", "query_decisions(q)", "stdio + HTTP"]} />
-      <Arrow label="“is this still binding?”" />
+      <Box title="MCP server · decisions://" accent={T.green} w={355}
+        lines={["is_binding(topic)", "query_decisions(q)", "verify_audit_log()", "resources · stdio + HTTP"]} />
+      <Arrow label={"“is this still\nbinding?”"} />
       <Box title="External agents" accent={T.clay} w={300}
         lines={["Claude · IDE bots · CI", "check BEFORE acting", "→ stopped if superseded"]} />
     </div>
 
-    <div style={{ textAlign: "center", marginTop: 46, fontFamily: T.sans, fontSize: 22, color: T.dim }}>
+    <div style={{ textAlign: "center", marginTop: 44, fontFamily: T.sans, fontSize: 23, color: T.dim }}>
       Qualifying tech: our own MCP server (ungated). Retrieval tells you what was said — Settled tells you what still binds.
+    </div>
+    <div style={{ textAlign: "center", marginTop: 12, fontFamily: T.mono, fontSize: 18, color: T.faint }}>
+      Python · Slack Bolt (Socket Mode) · SQLite · Model Context Protocol · OpenRouter (DeepSeek) · 29 tests + CI · live on Railway
     </div>
   </AbsoluteFill>
 );
